@@ -1,5 +1,33 @@
 # ModelInstancedRendering
 
+This repo provides a libGDX v1.12 demonstration of instanced 3D rendering.  The desktop version will render
+1 million 3D cubes.  GWT and android version will render 25 thousand cubes.
+
+Since libGDX v1.12 now has WebGL 2 support
+for GWT, you can now use instancing in GWT projects.
+
+Tested on desktop, android, and GWT.  iOS is included but not tested.
+
+You can run the demonstration, or download the desktop and android binaries here:
+
+## Voxel Terrain
+
+I have a method to create a very simple minecraft terrain included in the code.  You just need to
+comment out original + uncomment voxel method as shown below: 
+
+```java
+        //createBoxField(); // regular box field
+        createVoxelTerrain(); // simple minecraft terrain
+```
+
+## Learn More about OpenGL Instancing
+
+Based on: [ModelInstancedRenderingTest.java](https://github.com/libgdx/libgdx/blob/master/tests/gdx-tests/src/com/badlogic/gdx/tests/gles3/ModelInstancedRenderingTest.java)
+
+Learn OpenGL Instancing: [https://learnopengl.com/Advanced-OpenGL/Instancing](https://learnopengl.com/Advanced-OpenGL/Instancing)
+
+## Project Structure
+
 A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/tommyettinger/gdx-liftoff).
 
 This project was generated with a template including simple application launchers and a main class extending `Game` that sets the first screen.

@@ -3,6 +3,8 @@
 This repo provides a [libGDX](https://libgdx.com/) v1.12 demonstration of instanced 3D rendering.  The desktop version will render
 1 million 3D cubes.  GWT and android version will render 25 thousand cubes.
 
+https://github.com/antzGames/ModelInstancedRendering/assets/10563814/3cfea22b-a343-4b9f-ac30-b8980115080b
+
 Since libGDX v1.12 now has WebGL 2 support
 for GWT, you can now use instancing in GWT projects.
 
@@ -20,6 +22,8 @@ comment out original + uncomment voxel method in
         //createBoxField(); // regular box field
         createVoxelTerrain(); // simple minecraft terrain
 ```
+
+https://github.com/antzGames/ModelInstancedRendering/assets/10563814/f1324e7e-9421-4973-8ad6-f547baec6ab7
 
 ## Learn More about OpenGL Instancing
 

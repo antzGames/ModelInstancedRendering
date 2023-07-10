@@ -3,7 +3,7 @@
 This repo provides a [libGDX](https://libgdx.com/) v1.12 demonstration of instanced 3D rendering.  The desktop version will render
 1 million 3D cubes.  GWT and android version will render 25 thousand cubes.
 
-https://github.com/antzGames/ModelInstancedRendering/assets/10563814/3cfea22b-a343-4b9f-ac30-b8980115080b
+![Capture](https://github.com/antzGames/ModelInstancedRendering/assets/10563814/4114394c-ed84-4e3f-977f-047b536462c0)
 
 Since libGDX v1.12 now has WebGL 2 support
 for GWT, you can now use instancing in GWT projects.
@@ -11,6 +11,8 @@ for GWT, you can now use instancing in GWT projects.
 Tested on desktop, android, and GWT.  iOS project is included but not tested.
 
 You can run the demonstration, or download the desktop and android binaries here:
+
+https://github.com/antzGames/ModelInstancedRendering/assets/10563814/3cfea22b-a343-4b9f-ac30-b8980115080b
 
 ## Voxel Terrain
 

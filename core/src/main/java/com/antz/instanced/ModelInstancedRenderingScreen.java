@@ -388,6 +388,10 @@ public class ModelInstancedRenderingScreen implements Screen {
     }
 
     private void init() {
+        // Catch Browser keys
+        Gdx.input.setCatchKey(Input.Keys.SPACE, true);
+        Gdx.input.setCatchKey(Input.Keys.F1, true);
+
         // reusable variables
         mat4 = new Matrix4();
         q = new Quaternion();

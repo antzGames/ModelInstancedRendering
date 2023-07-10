@@ -17,7 +17,7 @@
  * https://github.com/libgdx/libgdx/blob/master/tests/gdx-tests/src/com/badlogic/gdx/tests/gles3/ModelInstancedRenderingTest.java
  *
  * Author: Antz
- * https://antzgames.itch.io/
+ * https://antzgames.itch.io/modelinstancedrendering
  *
  * July 2023
  *
@@ -25,7 +25,6 @@
  *
  ******************************************************************************/
 package com.antz.instanced;
-
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;

@@ -10,9 +10,7 @@ for GWT, you can now use instancing in GWT projects.
 
 Tested on desktop, android, and GWT.  iOS project is included but not tested.
 
-You can run the demonstration, or download the desktop and android binaries here:
-
-https://github.com/antzGames/ModelInstancedRendering/assets/10563814/3cfea22b-a343-4b9f-ac30-b8980115080b
+You can run the demonstration, or download the desktop and android binaries here: [https://antzgames.itch.io/modelinstancedrendering](https://antzgames.itch.io/modelinstancedrendering)
 
 ## Voxel Terrain
 
@@ -24,6 +22,10 @@ comment out original + uncomment voxel method in
         //createBoxField(); // regular box field
         createVoxelTerrain(); // simple minecraft terrain
 ```
+
+## Videos
+
+https://github.com/antzGames/ModelInstancedRendering/assets/10563814/3cfea22b-a343-4b9f-ac30-b8980115080b
 
 https://github.com/antzGames/ModelInstancedRendering/assets/10563814/f1324e7e-9421-4973-8ad6-f547baec6ab7
 

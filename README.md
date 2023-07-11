@@ -1,7 +1,7 @@
 # ModelInstancedRendering
 
 This repo provides a [libGDX](https://libgdx.com/) v1.12 demonstration of instanced 3D rendering.  The desktop version will render
-1 million 3D cubes.  GWT and android version will render 25 thousand cubes.
+1.03 million 3D cubes.  GWT and android version will render just under 25 thousand cubes.
 
 ![Capture](https://github.com/antzGames/ModelInstancedRendering/assets/10563814/4114394c-ed84-4e3f-977f-047b536462c0)
 
@@ -11,6 +11,24 @@ for GWT, you can now use instancing in GWT projects.
 Tested on desktop, android, and GWT.  iOS project is included but not tested.
 
 You can run the demonstration, or download the desktop and android binaries here: [https://antzgames.itch.io/modelinstancedrendering](https://antzgames.itch.io/modelinstancedrendering)
+
+## Documentation - HowTo
+
+The code is heavily documented so the best way to learn is to look at the code.  Before this project I had zero knowledge about 
+OpenGL instancing.   Below are the two sources I started with: 
+
+Official libGDX instance test: [ModelInstancedRenderingTest.java](https://github.com/libgdx/libgdx/blob/master/tests/gdx-tests/src/com/badlogic/gdx/tests/gles3/ModelInstancedRenderingTest.java)
+
+Learn OpenGL Instancing: [https://learnopengl.com/Advanced-OpenGL/Instancing](https://learnopengl.com/Advanced-OpenGL/Instancing)
+
+## Limitations
+
+I attempted very simple culling to reduce Matrix4 calculations and updates.  I based my culling on if the cube's center position is 
+whthin the camera's frustum.  The correct way is to test if the cube's bounding box is within the camera's frustum, but that
+proved to be expensive and impacted performance (CPU not GPU) at high instance counts.
+
+Depending on your hardware you will not get good frame rates with 1 million cubes on desktop.  Redude `INSTANCE_COUNT_SIDE` value and make sure 
+it is an odd number so that the camera is not in the middle of a cube on startup.
 
 ## Voxel Terrain
 
@@ -25,15 +43,13 @@ comment out original + uncomment voxel method in
 
 ## Videos
 
+Regular box field:
+
 https://github.com/antzGames/ModelInstancedRendering/assets/10563814/3cfea22b-a343-4b9f-ac30-b8980115080b
 
+Very simple voxel terrain:
+
 https://github.com/antzGames/ModelInstancedRendering/assets/10563814/f1324e7e-9421-4973-8ad6-f547baec6ab7
-
-## Learn More about OpenGL Instancing
-
-Based on: [ModelInstancedRenderingTest.java](https://github.com/libgdx/libgdx/blob/master/tests/gdx-tests/src/com/badlogic/gdx/tests/gles3/ModelInstancedRenderingTest.java)
-
-Learn OpenGL Instancing: [https://learnopengl.com/Advanced-OpenGL/Instancing](https://learnopengl.com/Advanced-OpenGL/Instancing)
 
 ## Project Structure
 

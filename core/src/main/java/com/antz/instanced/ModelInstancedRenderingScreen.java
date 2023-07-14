@@ -157,9 +157,7 @@ public class ModelInstancedRenderingScreen implements Screen {
             vec3Temp.set(offsets.get(targetIndex + 12), offsets.get(targetIndex + 13), offsets.get(targetIndex + 14));
 
             // Attempt culling if not within camera's frustum, or too far away to be noticed rotating
-            // Note: only uses center of box position to test.  Correct way is to use the bounding box
-            //       of mesh but that is very expensive at high INSTANCE_COUNT.
-            if (!(camFrustum.pointInFrustum(vec3Temp)) || vec3Temp.dst(camera.position) > CULLING_FACTOR) continue;
+            if (!(camFrustum.sphereInFrustum(vec3Temp, size*2)) || vec3Temp.dst(camera.position) > CULLING_FACTOR) continue;
 
             instanceUpdated++;
 

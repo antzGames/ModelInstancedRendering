@@ -23,12 +23,10 @@ Learn OpenGL Instancing: [https://learnopengl.com/Advanced-OpenGL/Instancing](ht
 
 ## Limitations
 
-I attempted very simple culling to reduce Matrix4 calculations and updates.  I based my culling on if the cube's center position is 
-within the camera's frustum.  However, the correct way is to test if the cube's bounding box is within the camera's frustum, but that
-proved to be expensive and impacted performance (CPU not GPU) at high instance counts.
-
 Depending on your hardware you will not get good frame rates with 1 million cubes on desktop.  Redude `INSTANCE_COUNT_SIDE` value and make sure 
 it is an odd number so that the camera is not in the middle of a cube on startup.
+
+GWT performance is around 20k-30k cubes depending on hardware.
 
 ## Voxel Terrain
 

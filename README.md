@@ -23,7 +23,7 @@ Learn OpenGL Instancing: [https://learnopengl.com/Advanced-OpenGL/Instancing](ht
 
 ## Limitations
 
-Depending on your hardware you will not get good frame rates with 1 million cubes on desktop.  ReduCe `INSTANCE_COUNT_SIDE` value and make sure 
+Depending on your hardware you will not get good frame rates with 1 million cubes on desktop.  Reduce `INSTANCE_COUNT_SIDE` value and make sure 
 it is an odd number so that the camera is not in the middle of a cube on startup.
 
 GWT performance is around 20k-30k cubes depending on hardware.

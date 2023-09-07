@@ -6,7 +6,7 @@ This repo provides a [libGDX](https://libgdx.com/) v1.12 demonstration of instan
 ![Capture](https://github.com/antzGames/ModelInstancedRendering/assets/10563814/4114394c-ed84-4e3f-977f-047b536462c0)
 
 Since libGDX v1.12 now has WebGL 2 support
-for GWT, you can now use instancing in GWT projects.
+for GWT and teaVM, you can now use instancing in GWT and teaVM projects.
 
 Tested on desktop, android, teaVM and GWT.  iOS project is included but not tested.
 

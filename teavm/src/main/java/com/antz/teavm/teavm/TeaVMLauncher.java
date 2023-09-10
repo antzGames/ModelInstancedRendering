@@ -19,6 +19,7 @@ public class TeaVMLauncher {
         config.width = 0;
         config.height = 0;
         config.useGL30 = true;
+        config.useGLArrayBuffer = true; // current hack for floatbuffer being slow
         new TeaApplication(new ModelInstancedRendering(), config);
     }
 }

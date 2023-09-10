@@ -137,10 +137,11 @@ public class ModelInstancedRenderingScreen implements Screen {
         font.draw(batch2D,"3D Cubes: " + INSTANCE_COUNT + "  Matrix4 Updated: " + instanceUpdated + "   Matrix4 Skipped: " + (INSTANCE_COUNT - instanceUpdated), 10, 80);
         font.draw(batch2D,"Update Time: " + TimeUtils.nanosToMillis(updateTime) + "ms   Render Time: " + TimeUtils.nanosToMillis(renderTime) + "ms", 10, 120);
         font.draw(batch2D,"FPS: " + Gdx.graphics.getFramesPerSecond() +
-                "  Draw Calls: " + profiler.getDrawCalls() +
-                "  Vert Count: " + profiler.getVertexCount().latest +
-                "  Shader Switches: " + profiler.getShaderSwitches() +
-                "  Texture Bindings: " + profiler.getTextureBindings(),
+            "  Camera Position: " + camera.position,
+//                "  Draw Calls: " + profiler.getDrawCalls() +
+//                "  Vert Count: " + profiler.getVertexCount().latest +
+//                "  Shader Switches: " + profiler.getShaderSwitches() +
+//                "  Texture Bindings: " + profiler.getTextureBindings(),
             10, 160);
     }
 
@@ -258,7 +259,8 @@ public class ModelInstancedRenderingScreen implements Screen {
         // Create offset FloatBuffer that will hold matrix4 for each instance to pass to shader
         offsets = BufferUtils.newFloatBuffer(INSTANCE_COUNT * 16); // 16 floats for mat4
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
-        Gdx.app.log("isDirect()",  "" + offsets.isDirect());
+        Gdx.app.log("FloatBuffer: isDirect()",  "" + offsets.isDirect());  // false = teaVM for now
+        Gdx.app.log("Application: Type()",  "" + Gdx.app.getType());
 
         createBoxField(); // regular box field
         //createVoxelTerrain(); // simple minecraft terrain
@@ -420,7 +422,7 @@ public class ModelInstancedRenderingScreen implements Screen {
 
         // until they fix the default font, load the fixed version locally
         font = new BitmapFont(Gdx.files.internal("fonts/lsans-15.fnt"));
-        font.setColor(Color.WHITE);
+        font.setColor(Color.GREEN);
         font.getData().setScale(2);
 
         // set low instance limits for all other platforms not desktop

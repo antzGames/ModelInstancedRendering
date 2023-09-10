@@ -1,14 +1,14 @@
 # ModelInstancedRendering
 
 This repo provides a [libGDX](https://libgdx.com/) v1.12 demonstration of instanced 3D rendering.  The desktop version will render
-1.03 million 3D cubes.  GWT and android version will render just under 25 thousand cubes.
+1.03 million 3D cubes.  GWT, teaVM and android version will render just under 25 thousand cubes.
 
 ![Capture](https://github.com/antzGames/ModelInstancedRendering/assets/10563814/4114394c-ed84-4e3f-977f-047b536462c0)
 
 Since libGDX v1.12 now has WebGL 2 support
-for GWT, you can now use instancing in GWT projects.
+for GWT and teaVM, you can now use instancing in GWT and teaVM projects.
 
-Tested on desktop, android, and GWT.  iOS project is included but not tested.
+Tested on desktop, android, teaVM and GWT.  iOS project is included but not tested.
 
 You can run the demonstration, or download the desktop and android binaries here: [https://antzgames.itch.io/modelinstancedrendering](https://antzgames.itch.io/modelinstancedrendering)
 
@@ -27,6 +27,8 @@ Depending on your hardware you will not get good frame rates with 1 million cube
 it is an odd number so that the camera is not in the middle of a cube on startup.
 
 GWT performance is around 20k-30k cubes depending on hardware.
+
+teaVM will have severe performance drop when cubes are rotating until gdx-teavm's `FloatBuffer` issues are resolved.
 
 ## Voxel Terrain
 

@@ -11,7 +11,6 @@ import net.mgsx.gltf.scene3d.shaders.PBRShaderProvider;
 
 public class MyPBRDepthShaderProvider extends PBRDepthShaderProvider {
 
-    //public static final int NUM_BONES = 128;
 
     public MyPBRDepthShaderProvider() {
 
@@ -25,10 +24,9 @@ public class MyPBRDepthShaderProvider extends PBRDepthShaderProvider {
 
         String prefix = DepthShader.createPrefix(renderable, config) + morphTargetsPrefix(renderable);
         if( renderable.meshPart.mesh.isInstanced()) {
-//            prefix += "#define instanced\n";
+            prefix += "#define instanced\n";
         }
-        //config.numBones = NUM_BONES;
-        config.vertexShader = Gdx.files.internal("shaders/pbr/depth.vs.glsl").readString();
+        config.vertexShader = Gdx.files.internal("shaders/depth.vs.glsl").readString();
         return new MyPBRDepthShader(renderable, config, prefix );
     }
 

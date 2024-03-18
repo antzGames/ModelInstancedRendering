@@ -65,7 +65,7 @@ import com.badlogic.gdx.utils.TimeUtils;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
 
-public class ModelInstancedRenderingScreen implements Screen {
+public class ModelInstancedRenderingBasicScreen implements Screen {
 
     private Environment environment;
     private Mesh mesh;
@@ -258,9 +258,6 @@ public class ModelInstancedRenderingScreen implements Screen {
 
         // Create offset FloatBuffer that will hold matrix4 for each instance to pass to shader
         offsets = BufferUtils.newFloatBuffer(INSTANCE_COUNT * 16); // 16 floats for mat4
-        Gdx.app.setLogLevel(Application.LOG_DEBUG);
-        Gdx.app.log("FloatBuffer: isDirect()",  "" + offsets.isDirect());  // false = teaVM for now
-        Gdx.app.log("Application: Type()",  "" + Gdx.app.getType());
 
         createBoxField(); // regular box field
         //createVoxelTerrain(); // simple minecraft terrain

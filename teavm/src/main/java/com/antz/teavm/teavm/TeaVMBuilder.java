@@ -14,7 +14,6 @@ public class TeaVMBuilder {
         TeaBuildConfiguration teaBuildConfiguration = new TeaBuildConfiguration();
         teaBuildConfiguration.assetsPath.add(new File("../assets"));
         teaBuildConfiguration.webappPath = new File("build/dist").getCanonicalPath();
-
         // Register any extra classpath assets here:
         // teaBuildConfiguration.additionalAssetsClasspathFiles.add("com/antz/teavm/asset.extension");
 

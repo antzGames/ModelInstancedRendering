@@ -34,6 +34,7 @@ dependencies {
   implementation "com.github.tommyettinger:gdx-backend-gwt:1.1200.1"
   implementation "com.github.tommyettinger:gdx-backend-gwt:1.1200.1:sources"
   implementation "com.google.jsinterop:jsinterop-annotations:2.0.0:sources"
+  api "com.github.mgsx-dev.gdx-gltf:gltf:$gltfVersion:sources"
   implementation project(':core')
 
 }
@@ -129,7 +130,7 @@ task dist(dependsOn: [clean, compileGwt]) {
 task addSource {
   doLast {
     sourceSets.main.compileClasspath += files(project(':core').sourceSets.main.allJava.srcDirs)
-    
+
   }
 }
 

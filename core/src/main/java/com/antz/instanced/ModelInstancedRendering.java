@@ -6,6 +6,7 @@ import com.badlogic.gdx.Game;
 public class ModelInstancedRendering extends Game {
     @Override
     public void create() {
-        setScreen(new ModelInstancedRenderingScreen());
+        //setScreen(new ModelInstancedRenderingBasicScreen()); // Original
+        setScreen(new ModelInstancedRenderingPBRScreen()); // gdx-gltf + PBR Shaders
     }
 }

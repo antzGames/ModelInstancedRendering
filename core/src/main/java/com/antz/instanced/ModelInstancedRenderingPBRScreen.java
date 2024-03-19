@@ -34,7 +34,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Cubemap;
-import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttribute;
@@ -42,12 +41,14 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
+import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.TimeUtils;
 
 import net.mgsx.gltf.loaders.gltf.GLTFLoader;
 import net.mgsx.gltf.scene3d.attributes.PBRCubemapAttribute;
@@ -70,19 +71,31 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
     private SceneAsset sceneAsset;
     private Scene scene;
     private DirectionalShadowLight light;
+    private Cubemap diffuseCubemap;
+    private Cubemap environmentCubemap;
+    private Cubemap specularCubemap;
+    private Texture brdfLUT;
+    private SceneSkybox skybox;
 
     // Instance constants
     private int INSTANCE_COUNT_SIDE;
     private int INSTANCE_COUNT;
-    private final float INSTANCE_SEPARATION_FACTOR = 5.0f;
+    private final float INSTANCE_SEPARATION_FACTOR = 9.0f;
+    private static float CULLING_FACTOR;
 
-    //private GLProfiler profiler;
     private SpriteBatch batch2D;
     private BitmapFont font;
     private PerspectiveCamera camera;
     private FirstPersonCameraController controller;
     private Matrix4 mat4;
     private Vector3 vec3Temp;
+    private FloatBuffer offsets;
+    private float[] floatTemp;
+    private Frustum camFrustum;
+
+    private int instanceUpdated;
+    private long updateTime;
+    private long renderTime;
 
     private final StringBuffer stringBuffer = new StringBuffer();
     private float size;
@@ -106,13 +119,16 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         checkUserInput();
 
         // rotate all instances if rotateOn == true
-        if (rotateOn)
-            scene.modelInstance.transform.rotate(Vector3.Y, Gdx.graphics.getDeltaTime() * 45f);
+        // rotate all instances that are close and in view
+        long startTime = TimeUtils.nanoTime();
+        update(delta);
+        updateTime = TimeUtils.timeSinceNanos(startTime);
 
         // draw all instances
         //light.setCenter(camera.position);
         sceneManager.update(delta);
         sceneManager.render();
+        renderTime = (long) (1f / Gdx.graphics.getFramesPerSecond()* 1000);
 
         // 2D stuff for stats text
         if (showStats) {
@@ -122,13 +138,76 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         }
     }
 
+
+    private void update(float delta) {
+        instanceUpdated = 0;
+        offsets.position(0);
+
+        if (!rotateOn) return; // no need to update matrix transform, so return
+
+        // Everything you do in this loop will impact performance at high INSTANCE_COUNT
+        for (int x = 0; x < INSTANCE_COUNT; x++) {
+            int targetIndex = x * 16; // each instance uses 16 floats for matrix4
+
+            // get position of instance (x, y, z)
+            // from the transposed Matrix4
+            vec3Temp.set(offsets.get(targetIndex + 3), offsets.get(targetIndex + 7), offsets.get(targetIndex + 11));
+
+            // Attempt culling if not within camera's frustum, or too far away to be noticed rotating
+            if (!(camFrustum.sphereInFrustum(vec3Temp, size*2)) || vec3Temp.dst(camera.position) > CULLING_FACTOR) continue;
+
+            /*
+             Matrix 4              TRANSPOSED
+             0  1  2  3            0  4  8  x
+             4  5  6  7            1  5  9  y
+             8  9  10 11           2  6  10 z
+             x  y  z  15           3  7  11 15
+             */
+
+            // Get the maxtrix4
+            floatTemp[0] = offsets.get(targetIndex);
+            floatTemp[1] = offsets.get(targetIndex + 1);
+            floatTemp[2] = offsets.get(targetIndex + 2);
+            floatTemp[3] = offsets.get(targetIndex + 3);
+            floatTemp[4] = offsets.get(targetIndex + 4);
+            floatTemp[5] = offsets.get(targetIndex + 5);
+            floatTemp[6] = offsets.get(targetIndex + 6);
+            floatTemp[7] = offsets.get(targetIndex + 7);
+            floatTemp[8] = offsets.get(targetIndex + 8);
+            floatTemp[9] = offsets.get(targetIndex + 9);
+            floatTemp[10] = offsets.get(targetIndex + 10);
+            floatTemp[11] = offsets.get(targetIndex + 11);
+            floatTemp[12] = offsets.get(targetIndex + 12);
+            floatTemp[13] = offsets.get(targetIndex + 13);
+            floatTemp[14] = offsets.get(targetIndex + 14);
+            floatTemp[15] = offsets.get(targetIndex + 15);
+
+            instanceUpdated++;
+            mat4.set(floatTemp);
+            mat4 = mat4.tra(); // convert back to regular
+
+            // spin every other cube differently - use just one for slight speed up
+            if (x % 2 == 0)
+                mat4.rotate(Vector3.X, 45 * delta);
+            else
+                mat4.rotate(Vector3.Z, 45 * delta);
+
+            // update float buffer and update the mesh instance data
+            offsets.position(targetIndex);
+            offsets.put(mat4.tra().getValues()); // **** >>>> transpose again
+            scene.modelInstance.model.nodes.first().parts.first().meshPart.mesh.updateInstanceData(targetIndex, mat4.getValues());
+        }
+    }
+
+
     private void drawStats() {
         stringBuffer.setLength(0);
         stringBuffer.append("x:").append((int)camera.position.x).append(", y:").append((int)camera.position.y).append(", z:").append((int)camera.position.z);
 
-        font.draw(batch2D,"WASD + mouse drag: camera,  F1: Toggle stats,  SPACE: Toggle rotation.  rotation=" + rotateOn, 10, 40);
-        font.draw(batch2D,"Camera Position: " + stringBuffer, 10, 80);
-        font.draw(batch2D,"FPS: " + Gdx.graphics.getFramesPerSecond() + "    Instances: " + INSTANCE_COUNT, 10, 120);
+        font.draw(batch2D,"WASD + mouse drag: camera, F1: Toggle stats, SPACE: Toggle rotation. rotation=" + rotateOn, 10, 40);
+        font.draw(batch2D,"3D Cubes: " + INSTANCE_COUNT + "  Matrix4 Updated: " + instanceUpdated + "   Matrix4 Skipped: " + (INSTANCE_COUNT - instanceUpdated), 10, 80);
+        font.draw(batch2D,"Update Time: " + TimeUtils.nanosToMillis(updateTime) + "ms   Total Render Time: " + renderTime + "ms", 10, 120);
+        font.draw(batch2D,"FPS: " + Gdx.graphics.getFramesPerSecond() + "  Camera Position: " + stringBuffer,10, 160);
     }
 
     private void checkUserInput() {
@@ -142,9 +221,7 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
     }
 
     private void initInstances() {
-        Mesh mesh = scene.modelInstance.model.meshes.first(); // again this demo assumes 1 mesh in the model
-
-        mesh.enableInstancedRendering(true, INSTANCE_COUNT,
+        scene.modelInstance.model.meshes.first().enableInstancedRendering(true, INSTANCE_COUNT,
             new VertexAttribute(VertexAttributes.Usage.Generic, 4, "i_worldTrans", 0),
             new VertexAttribute(VertexAttributes.Usage.Generic, 4, "i_worldTrans", 1),
             new VertexAttribute(VertexAttributes.Usage.Generic, 4, "i_worldTrans", 2),
@@ -152,7 +229,7 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         );
 
         // Create offset FloatBuffer that will contain instance data to pass to shader
-        FloatBuffer offsets = BufferUtils.newFloatBuffer(INSTANCE_COUNT * 16);
+        offsets = BufferUtils.newFloatBuffer(INSTANCE_COUNT * 16);
 
         // fill instance data buffer
         for (int x = 1; x <= INSTANCE_COUNT_SIDE; x++) {
@@ -164,21 +241,13 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
 
                     mat4.set(scene.modelInstance.transform);
 
-                    /*
-                        This is disabled because the lighting for individual
-                        instances does not work.  Uncomment to see the issue.
-
-                        If you know how to correct this (in the PBR shader)
-                        please let me know.
-                     */
-
-//                    int rand = MathUtils.random(2);
-//                    if (rand == 0)
-//                        mat4.setToRotationRad(Vector3.X, MathUtils.random(0.0f, (float)Math.PI*2.0f));
-//                    else if (rand == 1)
+                    int rand = MathUtils.random(2);
+                    if (rand == 0)
+                        mat4.setToRotationRad(Vector3.X, MathUtils.random(0.0f, (float)Math.PI*2.0f));
+                    else if (rand == 1)
                         mat4.setToRotationRad(Vector3.Y, MathUtils.random(0.0f, (float)Math.PI*2.0f));
-//                    else
-//                        mat4.setToRotationRad(Vector3.Z, MathUtils.random(0.0f, (float)Math.PI*2.0f));
+                    else
+                        mat4.setToRotationRad(Vector3.Z, MathUtils.random(0.0f, (float)Math.PI*2.0f));
 
                     mat4.setTranslation(vec3Temp);
                     offsets.put(mat4.tra().getValues());
@@ -187,7 +256,8 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         }
 
         ((Buffer) offsets).position(0);
-        mesh.setInstanceData(offsets);
+        scene.modelInstance.model.meshes.first().setInstanceData(offsets);
+        floatTemp = new float[INSTANCE_COUNT*16];
     }
 
     private void initGLTF() {
@@ -231,21 +301,21 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
 
         // setup quick IBL (image based lighting)
         IBLBuilder iblBuilder = IBLBuilder.createOutdoor(light);
-        Cubemap environmentCubemap = iblBuilder.buildEnvMap(1024);
-        Cubemap diffuseCubemap = iblBuilder.buildIrradianceMap(256);
-        Cubemap specularCubemap = iblBuilder.buildRadianceMap(10);
+        environmentCubemap = iblBuilder.buildEnvMap(1024);
+        diffuseCubemap = iblBuilder.buildIrradianceMap(256);
+        specularCubemap = iblBuilder.buildRadianceMap(10);
         iblBuilder.dispose();
 
         // This texture is provided by the library, no need to have it in your assets.
-        Texture brdfLUT = new Texture(Gdx.files.classpath("net/mgsx/gltf/shaders/brdfLUT.png"));
+        brdfLUT = new Texture(Gdx.files.classpath("net/mgsx/gltf/shaders/brdfLUT.png"));
 
-        sceneManager.setAmbientLight(0.5f);
+        sceneManager.setAmbientLight(0.25f);
         sceneManager.environment.set(new PBRTextureAttribute(PBRTextureAttribute.BRDFLUTTexture, brdfLUT));
         sceneManager.environment.set(PBRCubemapAttribute.createSpecularEnv(specularCubemap));
         sceneManager.environment.set(PBRCubemapAttribute.createDiffuseEnv(diffuseCubemap));
 
         // setup skybox
-        SceneSkybox skybox = new SceneSkybox(environmentCubemap);
+        skybox = new SceneSkybox(environmentCubemap);
         sceneManager.setSkyBox(skybox);
 
         // batch
@@ -271,6 +341,7 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         camera = new PerspectiveCamera(45, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.1f;
         camera.far = INSTANCE_COUNT_SIDE * INSTANCE_SEPARATION_FACTOR * size * 2;
+        CULLING_FACTOR = camera.far * 0.25f; // cull very small cubes that we cant detect rotating
 
         // Set camera to center of cube field
         camera.position.set(
@@ -281,6 +352,7 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         camera.direction.set(Vector3.Z);
         camera.up.set(Vector3.Y);
         camera.update();
+        camFrustum = camera.frustum;
         sceneManager.setCamera(camera);
         // Try it with your model!  Zebra are over rated anyhow!
         sceneAsset = new GLTFLoader().load(Gdx.files.internal("graphics/zebra.gltf"));
@@ -294,10 +366,6 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         controller.setVelocity(size*16); // you can change the speed
         controller.setDegreesPerPixel(0.2f);
         Gdx.input.setInputProcessor(controller);
-
-        // create & enable the profiler
-//        profiler = new GLProfiler(Gdx.graphics);
-//        profiler.enable();
     }
 
     @Override
@@ -326,5 +394,12 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         font.dispose();
         sceneAsset.dispose();
         sceneManager.dispose();
+        sceneManager.dispose();
+        sceneAsset.dispose();
+        environmentCubemap.dispose();
+        diffuseCubemap.dispose();
+        specularCubemap.dispose();
+        brdfLUT.dispose();
+        skybox.dispose();
     }
 }

@@ -114,11 +114,9 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(Color.BLACK, true);
-        //profiler.reset();
         controller.update();
         checkUserInput();
 
-        // rotate all instances if rotateOn == true
         // rotate all instances that are close and in view
         long startTime = TimeUtils.nanoTime();
         update(delta);
@@ -138,33 +136,34 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         }
     }
 
-
     private void update(float delta) {
         instanceUpdated = 0;
-        offsets.position(0);
-
         if (!rotateOn) return; // no need to update matrix transform, so return
+
+        offsets.position(0);
 
         // Everything you do in this loop will impact performance at high INSTANCE_COUNT
         for (int x = 0; x < INSTANCE_COUNT; x++) {
             int targetIndex = x * 16; // each instance uses 16 floats for matrix4
 
+            /*
+
+             Matrix4               TRANSPOSED
+             0  1  2  3            0  4  8  x
+             4  5  6  7            1  5  9  y
+             8  9  10 11           2  6  10 z
+             x  y  z  15           3  7  11 15
+
+             */
+
             // get position of instance (x, y, z)
-            // from the transposed Matrix4
+            // from the transposed Matrix4 - see above
             vec3Temp.set(offsets.get(targetIndex + 3), offsets.get(targetIndex + 7), offsets.get(targetIndex + 11));
 
             // Attempt culling if not within camera's frustum, or too far away to be noticed rotating
             if (!(camFrustum.sphereInFrustum(vec3Temp, size*2)) || vec3Temp.dst(camera.position) > CULLING_FACTOR) continue;
 
-            /*
-             Matrix 4              TRANSPOSED
-             0  1  2  3            0  4  8  x
-             4  5  6  7            1  5  9  y
-             8  9  10 11           2  6  10 z
-             x  y  z  15           3  7  11 15
-             */
-
-            // Get the maxtrix4
+            // Get the transpose maxtrix4
             floatTemp[0] = offsets.get(targetIndex);
             floatTemp[1] = offsets.get(targetIndex + 1);
             floatTemp[2] = offsets.get(targetIndex + 2);
@@ -184,9 +183,9 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
 
             instanceUpdated++;
             mat4.set(floatTemp);
-            mat4 = mat4.tra(); // convert back to regular
+            mat4 = mat4.tra(); // convert back to regular Matrix4
 
-            // spin every other cube differently - use just one for slight speed up
+            // spin every other cube differently
             if (x % 2 == 0)
                 mat4.rotate(Vector3.X, 45 * delta);
             else
@@ -198,7 +197,6 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
             scene.modelInstance.model.nodes.first().parts.first().meshPart.mesh.updateInstanceData(targetIndex, mat4.getValues());
         }
     }
-
 
     private void drawStats() {
         stringBuffer.setLength(0);
@@ -221,6 +219,7 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
     }
 
     private void initInstances() {
+        // 4 x 4 = 16 floats = Matrix4
         scene.modelInstance.model.meshes.first().enableInstancedRendering(true, INSTANCE_COUNT,
             new VertexAttribute(VertexAttributes.Usage.Generic, 4, "i_worldTrans", 0),
             new VertexAttribute(VertexAttributes.Usage.Generic, 4, "i_worldTrans", 1),
@@ -235,12 +234,15 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         for (int x = 1; x <= INSTANCE_COUNT_SIDE; x++) {
             for (int y = 1; y <= INSTANCE_COUNT_SIDE; y++) {
                 for (int z = 1; z <= INSTANCE_COUNT_SIDE; z++) {
+
+                    // sets the position of each instance
                     vec3Temp.set(x*size*INSTANCE_SEPARATION_FACTOR,
                         y*size*INSTANCE_SEPARATION_FACTOR,
                         z*size*INSTANCE_SEPARATION_FACTOR);
 
                     mat4.set(scene.modelInstance.transform);
 
+                    // This randomly sets a random rotation to a random axis
                     int rand = MathUtils.random(2);
                     if (rand == 0)
                         mat4.setToRotationRad(Vector3.X, MathUtils.random(0.0f, (float)Math.PI*2.0f));
@@ -250,7 +252,7 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
                         mat4.setToRotationRad(Vector3.Z, MathUtils.random(0.0f, (float)Math.PI*2.0f));
 
                     mat4.setTranslation(vec3Temp);
-                    offsets.put(mat4.tra().getValues());
+                    offsets.put(mat4.tra().getValues()); // notice transpose here
                 }
             }
         }
@@ -269,6 +271,7 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         mat4 = new Matrix4();
         vec3Temp = new Vector3();
 
+        // Same shaders as Duck Field Demo
         sceneManager = new SceneManager(new MyPBRShaderProvider(), new MyPBRDepthShaderProvider());
 
         // gdx-gltf set up
@@ -329,9 +332,9 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         // set low instance limits for all other platforms not desktop
         // >>> always use an odd number so camera is not inside a cube
         if (Gdx.app.getType().equals(Application.ApplicationType.Desktop)) {
-            INSTANCE_COUNT_SIDE = 101;
+            INSTANCE_COUNT_SIDE = 101; // 1M+ cubes
         } else {
-            INSTANCE_COUNT_SIDE = 29;
+            INSTANCE_COUNT_SIDE = 29; // about 25k cubes
         }
 
         // size of box
@@ -341,6 +344,8 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         camera = new PerspectiveCamera(45, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.1f;
         camera.far = INSTANCE_COUNT_SIDE * INSTANCE_SEPARATION_FACTOR * size * 2;
+
+        // used for frustum
         if (Gdx.app.getType().equals(Application.ApplicationType.Desktop)) {
             CULLING_FACTOR = camera.far * 0.25f; // cull very small cubes that we cant detect rotating
         } else {
@@ -358,7 +363,9 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         camera.up.set(Vector3.Y);
         camera.update();
         camFrustum = camera.frustum;
+
         sceneManager.setCamera(camera);
+
         // Try it with your model!  Zebra are over rated anyhow!
         sceneAsset = new GLTFLoader().load(Gdx.files.internal("graphics/zebra.gltf"));
         scene = new Scene(sceneAsset.scene);
@@ -371,7 +378,6 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         controller.setVelocity(size*16); // you can change the speed
         controller.setDegreesPerPixel(0.2f);
         Gdx.input.setInputProcessor(controller);
-
     }
 
     @Override

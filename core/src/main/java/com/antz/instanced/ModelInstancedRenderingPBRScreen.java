@@ -341,7 +341,12 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         camera = new PerspectiveCamera(45, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.1f;
         camera.far = INSTANCE_COUNT_SIDE * INSTANCE_SEPARATION_FACTOR * size * 2;
-        CULLING_FACTOR = camera.far * 0.25f; // cull very small cubes that we cant detect rotating
+        if (Gdx.app.getType().equals(Application.ApplicationType.Desktop)) {
+            CULLING_FACTOR = camera.far * 0.25f; // cull very small cubes that we cant detect rotating
+        } else {
+            CULLING_FACTOR = camera.far; // cull very small cubes that we cant detect rotating
+            Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+        }
 
         // Set camera to center of cube field
         camera.position.set(
@@ -366,6 +371,7 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         controller.setVelocity(size*16); // you can change the speed
         controller.setDegreesPerPixel(0.2f);
         Gdx.input.setInputProcessor(controller);
+
     }
 
     @Override

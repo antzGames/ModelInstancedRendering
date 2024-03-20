@@ -406,8 +406,6 @@ public class ModelInstancedRenderingPBRScreen implements Screen {
         font.dispose();
         sceneAsset.dispose();
         sceneManager.dispose();
-        sceneManager.dispose();
-        sceneAsset.dispose();
         environmentCubemap.dispose();
         diffuseCubemap.dispose();
         specularCubemap.dispose();

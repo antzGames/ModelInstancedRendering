@@ -3,7 +3,7 @@
 This repo provides a [libGDX](https://libgdx.com/) v1.12 demonstration of instanced 3D rendering.  The desktop version will render
 1.03 million 3D cubes.  GWT, teaVM and android version will render just under 25 thousand cubes.
 
-![Capture](https://github.com/antzGames/ModelInstancedRendering/assets/10563814/4114394c-ed84-4e3f-977f-047b536462c0)
+![image](https://github.com/antzGames/ModelInstancedRendering/assets/10563814/2ddaaeb5-900f-42b0-96b8-e8bb64bd69db)
 
 Since libGDX v1.12 now has WebGL 2 support
 for GWT and teaVM, you can now use instancing in GWT and teaVM projects.

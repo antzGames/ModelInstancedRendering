@@ -314,7 +314,8 @@ void main() {
     vec3 normalVec = a_normal;
     #if defined(instanced)
         pos *= i_worldTrans;
-        normalVec = a_normal * transpose(inverse(mat3(i_worldTrans)));
+        //normalVec = a_normal * transpose(inverse(mat3(i_worldTrans)));
+        normalVec = a_normal * mat3(i_worldTrans);
     #endif
     // end MS
 
